@@ -1,6 +1,7 @@
 package UI;
 
 import Backend.BinaryConverter;
+import Backend.Converter;
 import Backend.DecimalConverter;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
@@ -20,7 +21,7 @@ import Backend.HexConverter;
 
 public class App extends Application {
 
-    private int WIDTH = 300;
+    private int WIDTH = 265;
     private int HEIGHT = 300;
 
     public static void main(String[] args) {
@@ -33,13 +34,13 @@ public class App extends Application {
 
         TabPane root = new TabPane();
 
-        GridPane hexGridPane = getHexConverterUI();
+        GridPane hexGridPane = getConverterUI("hex");
         Tab hexTab = new Tab("Hex", hexGridPane);
 
-        GridPane binaryGridPane = getBinaryConverterUI();
+        GridPane binaryGridPane = getConverterUI("binary");
         Tab binaryTab = new Tab("Binary", binaryGridPane);
 
-        GridPane decimalGridPane = getDecimalConverterUI();
+        GridPane decimalGridPane = getConverterUI("decimal");
         Tab decimalTab = new Tab("Decimal", decimalGridPane);
 
         root.getTabs().add(hexTab);
@@ -51,23 +52,25 @@ public class App extends Application {
         primaryStage.show();
     }
 
-    private GridPane getHexConverterUI() {
+    // type is one of: {"decimal", "hex", "binary"}
+    private GridPane getConverterUI(String type) {
+
         GridPane grid = new GridPane();
-        grid.setAlignment(Pos.CENTER);
+//        grid.setAlignment(Pos.CENTER);
         grid.setHgap(5);
         grid.setVgap(10);
         grid.setPadding(new Insets(25, 25, 25, 25));
 
         // set the title
-        Text sceneTitle = new Text("Hexadecimal Conversion");
+        Text sceneTitle = new Text();
         sceneTitle.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
         grid.add(sceneTitle, 0, 0, 2, 1);
 
         // create a user input box for the hex number to be converted
-        Label hexInputLabel = new Label("0x");
-        final TextField hexInput = new TextField();
-        grid.add(hexInputLabel, 0, 1);
-        grid.add(hexInput, 1, 1);
+        Label inputLabel = new Label();
+        final TextField inputField = new TextField();
+        grid.add(inputLabel, 0, 1);
+        grid.add(inputField, 1, 1);
 
         // create a submit button
         Button submitButton = new Button("Convert");
@@ -77,27 +80,46 @@ public class App extends Application {
         grid.add(buttonBox, 1, 2);
 
         // create space for binary and decimal conversions
-        Label decimalResultLabel = new Label("Decimal: ");
-        grid.add(decimalResultLabel, 0, 4, 2, 1);
-        final Text decimalResult = new Text();
-        grid.add(decimalResult, 1, 5, 2, 1);
+        Label result1Label = new Label();
+        grid.add(result1Label, 0, 4, 2, 1);
+        final Text result1 = new Text();
+        grid.add(result1, 1, 5, 4, 1);
 
-        Label binaryResultLabel = new Label("Binary: ");
-        grid.add(binaryResultLabel, 0, 6, 2, 1);
-        final Text binaryResult = new Text();
-        grid.add(binaryResult, 1, 7, 2, 1);
+        Label result2Label = new Label();
+        grid.add(result2Label, 0, 6, 2, 1);
+        final Text result2 = new Text();
+        grid.add(result2, 1, 7, 4, 1);
 
-        final HexConverter converter = new HexConverter();
+        final Converter converter;
+
+        if (type.equals("decimal")) {
+            sceneTitle.setText("Decimal Converter");
+            inputLabel.setText("Decimal:");
+            result1Label.setText("Binary: ");
+            result2Label.setText("Hexadecimal: ");
+            converter = new DecimalConverter();
+        } else if (type.equals("hex")) {
+            sceneTitle.setText("Hexadecimal Converter");
+            inputLabel.setText("0x");
+            result1Label.setText("Decimal: ");
+            result2Label.setText("Binary: ");
+            converter = new HexConverter();
+        } else {    // binary
+            sceneTitle.setText("Binary Converter");
+            inputLabel.setText("0b");
+            result1Label.setText("Decimal: ");
+            result2Label.setText("Hexadecimal: ");
+            converter = new BinaryConverter();
+        }
 
         // set what the submit button does
         submitButton.setOnAction(new EventHandler<ActionEvent>() {
 
             @Override
             public void handle(ActionEvent event) {
-                String numberString = hexInput.getText();
-                int conversion = converter.convertString(numberString);
-                decimalResult.setText(Integer.toString(conversion));
-                binaryResult.setText("0b" + Integer.toBinaryString(conversion));
+                String numberString = inputField.getText();
+                result1.setText(converter.getResult1(numberString));
+                result2.setText(converter.getResult2(numberString));
             }
         });
 
@@ -106,113 +128,5 @@ public class App extends Application {
         return grid;
     }
 
-    private GridPane getBinaryConverterUI() {
-        GridPane grid = new GridPane();
-        grid.setAlignment(Pos.CENTER);
-        grid.setHgap(5);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(25, 25, 25, 25));
 
-        // set the title
-        Text sceneTitle = new Text("Binary Conversion");
-        sceneTitle.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
-        grid.add(sceneTitle, 0, 0, 2, 1);
-
-        // create a user input box for the hex number to be converted
-        Label hexInputLabel = new Label("0b");
-        final TextField hexInput = new TextField();
-        grid.add(hexInputLabel, 0, 1);
-        grid.add(hexInput, 1, 1);
-
-        // create a submit button
-        Button submitButton = new Button("Convert");
-        HBox buttonBox = new HBox(submitButton);
-        buttonBox.setSpacing(10);
-        buttonBox.setAlignment(Pos.BOTTOM_RIGHT);
-        grid.add(buttonBox, 1, 2);
-
-        // create space for binary and decimal conversions
-        Label decimalResultLabel = new Label("Decimal: ");
-        grid.add(decimalResultLabel, 0, 4, 2, 1);
-        final Text decimalResult = new Text();
-        grid.add(decimalResult, 1, 5, 2, 1);
-
-        Label hexResultLabel = new Label("Hex: ");
-        grid.add(hexResultLabel, 0, 6, 2, 1);
-        final Text hexResult = new Text();
-        grid.add(hexResult, 1, 7, 2, 1);
-
-        final BinaryConverter converter = new BinaryConverter();
-
-        // set what the submit button does
-        submitButton.setOnAction(new EventHandler<ActionEvent>() {
-
-            @Override
-            public void handle(ActionEvent event) {
-                String numberString = hexInput.getText();
-                int conversion = converter.convertString(numberString);
-                decimalResult.setText(Integer.toString(conversion));
-                hexResult.setText("0x" + Integer.toHexString(conversion));
-            }
-        });
-
-//        grid.setGridLinesVisible(true);
-
-        return grid;
-    }
-
-    private GridPane getDecimalConverterUI() {
-        GridPane grid = new GridPane();
-        grid.setAlignment(Pos.CENTER);
-        grid.setHgap(5);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(25, 25, 25, 25));
-
-        // set the title
-        Text sceneTitle = new Text("Decimal Conversion");
-        sceneTitle.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
-        grid.add(sceneTitle, 0, 0, 2, 1);
-
-        // create a user input box for the hex number to be converted
-        Label decimalInputLabel = new Label("");
-        final TextField decimalInput = new TextField();
-        grid.add(decimalInputLabel, 0, 1);
-        grid.add(decimalInput, 1, 1);
-
-        // create a submit button
-        Button submitButton = new Button("Convert");
-        HBox buttonBox = new HBox(submitButton);
-        buttonBox.setSpacing(10);
-        buttonBox.setAlignment(Pos.BOTTOM_RIGHT);
-        grid.add(buttonBox, 1, 2);
-
-        // create space for binary and decimal conversions
-        Label binaryResultLabel = new Label("Binary: ");
-        grid.add(binaryResultLabel, 0, 4, 2, 1);
-        final Text binaryResult = new Text();
-        grid.add(binaryResult, 1, 5, 2, 1);
-
-        Label hexResultLabel = new Label("Binary: ");
-        grid.add(hexResultLabel, 0, 6, 2, 1);
-        final Text hexResult = new Text();
-        grid.add(hexResult, 1, 7, 2, 1);
-
-        final DecimalConverter converter = new DecimalConverter();
-
-        // set what the submit button does
-        submitButton.setOnAction(new EventHandler<ActionEvent>() {
-
-            @Override
-            public void handle(ActionEvent event) {
-                String numberString = decimalInput.getText();
-                int conversion = converter.convertString(numberString);
-                hexResult.setText(Integer.toString(conversion));
-                binaryResult.setText("0b" + Integer.toBinaryString(conversion));
-            }
-        });
-
-//        grid.setGridLinesVisible(true);
-
-        return grid;
-    }
 }

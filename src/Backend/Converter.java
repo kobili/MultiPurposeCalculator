@@ -9,4 +9,7 @@ public abstract class Converter {
 
     public abstract int convertString(String numberString);
 
+    public abstract String getResult1(String numberString);
+    public abstract String getResult2(String numberString);
+
 }
